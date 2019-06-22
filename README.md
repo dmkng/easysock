@@ -6,9 +6,9 @@ Note: This library is currently header-only. It will not be header-only in the f
 Usage can be found in the `examples` directory
 
 ## Supported protocols
-- [x] TCP (basic support)
+- [x] TCP (currently basic support only)
 - [ ] UDP
-- [x] HTTP (in early stage)
+- [x] HTTP (currently in early stage)
 - [ ] HTTPS
 - [ ] WebSocket
 - [ ] WebSocket Secure
