@@ -12,6 +12,7 @@ Usage can be found in the `examples` directory
 - [ ] HTTPS
 - [ ] WebSocket
 - [ ] WebSocket Secure
+- [ ] WebRTC
 - [ ] easysock protocol (built on top of TCP)
 
 You can suggest more useful protocols by opening an issue
