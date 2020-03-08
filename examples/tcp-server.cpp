@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdio>
-#include "include/easysock/tcp.hpp"
+#include "../tcp.hpp"
 
 void* OnConnect(void* pointer) {
 	auto conn = (easysock::tcp::Client*)pointer;

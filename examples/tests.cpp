@@ -1,7 +1,6 @@
 #include <iostream>
-#include <cstdio>
-#include "include/easysock/tcp.hpp"
-#include "include/easysock/http.hpp"
+#include "../tcp.hpp"
+#include "../http.hpp"
 
 void* OnConnect(void* pointer) {
 	auto conn = (easysock::tcp::Client*)pointer;
@@ -60,17 +59,16 @@ int main() {
 	easysock::http::defaultSettings->version = "HTTP/1.0";
 
 	auto settings = new easysock::http::Settings();
-	settings->headers = { { "Host", "themaking.my.to" } };
+	settings->headers = { { "Host", "example.com" } };
 
-	auto conn2 = easysock::http::connect("localhost", 80, "/", settings);
-	if(conn2 == nullptr) {
-		// std::cout << "ERROR " << easysock::lastError << " in " << easysock::lastErrorPlace << std::endl;
-		std::cout << WSAGetLastError() << std::endl;
+	conn = easysock::http::connect("example.com", 80, "/", settings);
+	if(conn == nullptr) {
+		std::cout << "ERROR " << easysock::lastError << " in " << easysock::lastErrorPlace << std::endl;
 	} else {
-		std::cout << conn2->readAll() << std::endl;
+		std::cout << conn->readAll() << std::endl;
 	}
 
-	delete conn2;
+	delete conn;
 
 	easysock::exit();
 	return 0;

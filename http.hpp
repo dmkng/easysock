@@ -71,8 +71,8 @@ namespace easysock {
 				this->client = client;
 			}
 
-			virtual ~Client() {
-				destroy();
+			~Client() {
+				client->destroy();
 			}
 
 			std::string read(int &status) {
@@ -86,10 +86,6 @@ namespace easysock {
 			std::string readAll() {
 				return client->readAll();
 			}
-
-			void destroy() {
-				client->destroy();
-			}
 		};
 
 		struct Settings {
@@ -97,23 +93,33 @@ namespace easysock {
 			std::string version = "HTTP/1.1";
 			easysock::strmap headers;
 			std::string body;
-		};
-		Settings* defaultSettings = new Settings();
+			int timeout = 5000;
+		} *defaultSettings;
 
 		Client* connect(std::string addr, int port, std::string path = "/", Settings* conn = defaultSettings) {
+			if(path.empty() || conn->method.empty() || conn->version.empty()) return nullptr;
+
 			auto tcpClient = easysock::tcp::connect(addr, port);
 			if(tcpClient == nullptr) return nullptr;
 
-			if(path.empty() || conn->method.empty() || conn->version.empty()) return nullptr;
-
-			if(tcpClient->write(conn->method + " " + path + " " + conn->version + "\r\n" + easysock::toString(conn->headers, ": ", "\r\n") + "\r\n" + conn->body) == -1) {
+			if(tcpClient->write(conn->method + " " + path + " " + conn->version + "\r\n" + easysock::toString(conn->headers, ": ", "\r\n") + "\r\n" + conn->body) < 1) {
 				return nullptr;
 			}
 
-			std::string data = tcpClient->readAll();
+			int status;
+			std::string data;
+			clock_t time = clock();
+			do {
+				data += tcpClient->read(status);
+			} while(status != -1 && data.find("\r\n\r\n") == std::string::npos && clock() - time < conn.timeout);
+
 			if(data == "") return nullptr;
 
-			// Parse here
+			easysock::strmap headers;
+			std::string status;
+			std::string body;
+
+			// TODO: Parsing
 
 			return new Client(tcpClient);
 		}
@@ -129,15 +135,15 @@ namespace easysock {
 				this->client = client;
 			}
 
-			virtual ~Response() {
-				destroy();
+			~Response() {
+				client->destroy();
 			}
 
-			bool writeHead(std::string status, easysock::strmap headers = {}) {
+			bool writeHead(int statusCode, std::string status, easysock::strmap headers = {}) {
 				if(status.empty()) return false;
-				this->head = "HTTP/1.1 " + status;
+				this->head = "HTTP/1.1 " + std::to_string(statusCode) + " " + status;
 
-				for(auto &header : headers) {
+				for(auto const &header : headers) {
 					this->headers.emplace(header.first, header.second);
 				}
 
@@ -146,9 +152,7 @@ namespace easysock {
 
 			bool writeHead(int status, easysock::strmap headers = {}) {
 				if(statusCodes.find(status) == statusCodes.end()) return false;
-
-				std::string statusStr = std::to_string(status) + " " + statusCodes[status];
-				return writeHead(statusStr, headers);
+				return writeHead(status, statusCodes[status], headers);
 			}
 
 			void write(std::string body) {
@@ -164,10 +168,6 @@ namespace easysock {
 				}
 
 				return true;
-			}
-
-			void destroy() {
-				client->destroy();
 			}
 		};
 

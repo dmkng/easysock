@@ -95,6 +95,7 @@ namespace easysock {
 					#else
 						easysock::lastError = errno;
 					#endif
+					status = -1;
 					return "";
 				} else {
 					buf.resize(status);

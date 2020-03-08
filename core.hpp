@@ -15,6 +15,8 @@
 	#define SOCKET_ERROR -1
 #endif
 
+#include <map>
+
 namespace easysock {
 	#ifdef __EASYSOCK_WINDOWS
 		WSADATA _initData;
@@ -22,6 +24,7 @@ namespace easysock {
 	#else
 		typedef int socket_t;
 	#endif
+	typedef std::map<std::string, std::string> strmap;
 
 	int lastErrorPlace;
 	int lastError;
@@ -49,6 +52,14 @@ namespace easysock {
 			_initData.wHighVersion = 0;
 			WSACleanup();
 		#endif
+	}
+
+	std::string toString(easysock::strmap map, std::string delim, std::string append, std::string prepend = "") {
+		std::string out = "";
+		for(auto const &elem : map) {
+			out += prepend + elem.first + delim + elem.second + append;
+		}
+		return out;
 	}
 }
 
